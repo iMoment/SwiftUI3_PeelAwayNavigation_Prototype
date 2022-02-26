@@ -24,8 +24,8 @@ struct HomeView: View {
             ForEach(onboardingScreens.indices.reversed(), id: \.self) { index in
                 // MARK: View
                 OnboardingView(onboarding: onboardingScreens[index])
-                    .clipShape(LiquidShape(offset: onboardingScreens[index].offset))
-                    .padding(.trailing)
+                    .clipShape(LiquidShape(offset: onboardingScreens[index].offset, curvePoint: currentIndex == index ? 50 : 0))
+                    .padding(.trailing, currentIndex == index ? 15 : 0)
                     .ignoresSafeArea()
             }
         }
@@ -37,7 +37,7 @@ struct HomeView: View {
                 Image(systemName: "chevron.left")
                     .font(.largeTitle)
                     .frame(width: 50, height: 50)
-                    .foregroundColor(Color.red)
+                    .foregroundColor(Color.white)
                     .contentShape(Rectangle())
                     .gesture(
                         DragGesture()
@@ -112,10 +112,14 @@ struct HomeView_Previews: PreviewProvider {
 
 struct LiquidShape: Shape {
     var offset: CGSize
+    var curvePoint: CGFloat
     
-    var animatableData: CGSize.AnimatableData {
-        get { return offset.animatableData }
-        set { offset.animatableData = newValue }
+    var animatableData: AnimatablePair<CGSize.AnimatableData, CGFloat> {
+        get { return AnimatablePair(offset.animatableData, curvePoint) }
+        set {
+            offset.animatableData = newValue.first
+            curvePoint = newValue.second
+        }
     }
     
     func path(in rect: CGRect) -> Path {
@@ -137,7 +141,7 @@ struct LiquidShape: Shape {
             
             let mid: CGFloat = 80 + ((to - 80) / 2)
            
-            path.addCurve(to: CGPoint(x: rect.width, y: 180), control1: CGPoint(x: width - 50, y: mid), control2: CGPoint(x: width - 50, y: mid))
+            path.addCurve(to: CGPoint(x: rect.width, y: to), control1: CGPoint(x: width - curvePoint, y: mid), control2: CGPoint(x: width - curvePoint, y: mid))
         }
     }
 }
